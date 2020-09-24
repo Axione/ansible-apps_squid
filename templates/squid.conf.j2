@@ -1,0 +1,77 @@
+{{ ansible_managed | comment }}
+
+visible_hostname {{ inventory_hostname }}		#is used if no specific ID is set.
+http_port {{ squid_port }}
+coredump_dir {{ squid_core_dump_dir }}
+max_filedescriptors {{ ulimit }}
+{% if squid_dns_v4_first is defined and squid_dns_v4_first is sameas true %}
+dns_v4_first on
+{% endif %}
+
+error_directory /usr/share/squid/errors/French
+
+#############################################################
+# DEFINE LOGS
+
+access_log stdio:{{ squid_log_access }} squid
+cache_log {{ squid_log_cache }} 
+cache_store_log stdio:{{ squid_log_store }}
+
+#############################################################
+# DEFINE SUBNETS
+
+{% for item in squid_acl_subnets %}
+acl {{ item.name }} src {{ item.subnet }} 
+{% endfor %} 
+
+#############################################################
+# DEFINE PORTS
+
+{% for item in squid_acl_ports %}
+acl {{ item.type | default('Safe_ports') }} port {{ item.port }} #{{item.comment | default("") }}
+{% endfor %}
+acl CONNECT method CONNECT
+
+#############################################################
+# DEFINE AUTH RULES
+
+{% for item in squid_auth_rules %}
+http_access {{ item.access }} {{ item.type | default("") }} {{ item.scope }}
+{% endfor %}
+
+{% if squid_auth_domain is defined and squid_auth_domain is sameas true %}
+{% for item in squid_auth_rules_domain %}
+acl {{ item.name }} dstdomain .{{ item.domain }}
+always_direct {{ item.access }} {{ item.name }}
+{% endfor %}
+{% endif %}
+
+{% if squid_cache_allow is defined and squid_cache_allow is sameas true %}
+#############################################################
+# DEFINE CACHE
+
+# Uncomment and adjust the following to add a disk cache directory.
+cache_dir ufs {{ squid_cache_dir }} 500 16 256
+cache_mem {{ squid_cache_mem }}
+maximum_object_size {{ squid_cache_obj_size }}
+cache_effective_user {{ squid_user }}
+cache_effective_group {{ squid_group }}
+{% endif %}
+
+#############################################################
+# DEFINE REFRESH
+
+refresh_pattern ^ftp:		1440	20%	10080
+refresh_pattern ^gopher:	1440	0%	1440
+refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
+refresh_pattern .		0	20%	1440
+
+{% if squid_snmp_allow is defined and squid_snmp_allow is sameas true %}
+#############################################################
+# DEFINE SNMP
+acl snmpnet src 127.0.0.1
+acl snmppublic snmp_community public
+snmp_port {{ squid_snmp_port }}
+snmp_access allow snmppublic snmpnet
+snmp_access deny all
+{% endif %}

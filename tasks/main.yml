@@ -1,0 +1,50 @@
+---
+- name: "Check for apt-cacher-ng executable file"
+  stat:
+    path: '/usr/sbin/squid'
+  changed_when: false
+  register: squid_binary
+
+- when: not squid_binary.stat.exists
+  block:
+    - name: "Install squid package"
+      package:
+        name: "squid"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "Creating log directory"
+      file:
+        path: "/var/log/squid/"
+        state: directory
+        mode: '0755'
+
+    - name: "Change ulimit to {{ ulimit }} for root"
+      pam_limits:
+        domain: root
+        limit_type: '-'
+        limit_item: nofile
+        value: "{{ ulimit }}"
+
+    - name: "Change ulimit to {{ ulimit }} for all"
+      pam_limits:
+        domain: '*'
+        limit_type: '-'
+        limit_item: nofile
+        value: "{{ ulimit }}"
+
+- name: "Configure squid.conf"
+  template:
+    src: "squid.conf.j2"
+    dest: "/etc/squid/squid.conf"
+    mode: '0644'
+  notify:
+    - test squid configuration
+    - restart squid
+
+- name: "Start and enable squid"
+  service:
+    name: squid
+    state: started
+    enabled: true

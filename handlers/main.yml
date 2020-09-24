@@ -1,0 +1,9 @@
+---
+- name: "test squid configuration"
+  command: squid -k parse
+  changed_when: false
+
+- name: "restart squid"
+  service:
+    name: squid
+    state: restarted
