@@ -1,5 +1,5 @@
 ---
-- name: "Check for apt-cacher-ng executable file"
+- name: "Check for squid executable file"
   stat:
     path: '/usr/sbin/squid'
   changed_when: false
