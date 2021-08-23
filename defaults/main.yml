@@ -1,8 +1,8 @@
 ---
-squid_port:     3128
-squid_user:     proxy
-squid_group:    proxy
-ulimit:         "65536"
+squid_port: 3128
+squid_user: proxy
+squid_group: proxy
+ulimit: "65536"
 squid_dns_v4_first: true
 
 squid_core_dump_dir: "/var/spool/squid"
