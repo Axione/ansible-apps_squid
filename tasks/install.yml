@@ -1,40 +1,41 @@
 ---
 - name: "Check for squid executable file"
-  stat:
+  ansible.builtin.stat:
     path: '/usr/sbin/squid'
   changed_when: false
   register: squid_binary
 
-- when: not squid_binary.stat.exists
+- name: "Install tasks"
+  when: not squid_binary.stat.exists
   block:
     - name: "Install squid package"
-      package:
+      ansible.builtin.package:
         name: "squid"
         state: present
         update_cache: true
 
     - name: "Creating log directory"
-      file:
+      ansible.builtin.file:
         path: "/var/log/squid/"
         state: directory
         mode: '0755'
 
     - name: "Change ulimit to {{ ulimit }} for root"
-      pam_limits:
+      community.general.pam_limits:
         domain: root
         limit_type: '-'
         limit_item: nofile
         value: "{{ ulimit }}"
 
     - name: "Change ulimit to {{ ulimit }} for all"
-      pam_limits:
+      community.general.pam_limits:
         domain: '*'
         limit_type: '-'
         limit_item: nofile
         value: "{{ ulimit }}"
 
 - name: "Configure squid.conf"
-  template:
+  ansible.builtin.template:
     src: "squid.conf.j2"
     dest: "/etc/squid/squid.conf"
     mode: '0644'
@@ -43,7 +44,7 @@
     - restart squid
 
 - name: "Start and enable squid"
-  service:
+  ansible.builtin.service:
     name: squid
     state: started
     enabled: true

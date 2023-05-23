@@ -1,9 +1,9 @@
 ---
 - name: "test squid configuration"
-  command: squid -k parse
+  ansible.builtin.command: squid -k parse
   changed_when: false
 
 - name: "restart squid"
-  service:
+  ansible.builtin.service:
     name: squid
     state: restarted

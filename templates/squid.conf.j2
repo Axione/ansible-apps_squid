@@ -8,21 +8,21 @@ max_filedescriptors {{ ulimit }}
 dns_v4_first on
 {% endif %}
 
-error_directory /usr/share/squid/errors/French
+error_directory /usr/share/squid/errors/fr-fr
 
 #############################################################
 # DEFINE LOGS
 
 access_log stdio:{{ squid_log_access }} squid
-cache_log {{ squid_log_cache }} 
+cache_log {{ squid_log_cache }}
 cache_store_log stdio:{{ squid_log_store }}
 
 #############################################################
 # DEFINE SUBNETS
 
 {% for item in squid_acl_subnets %}
-acl {{ item.name }} src {{ item.subnet }} 
-{% endfor %} 
+acl {{ item.name }} src {{ item.subnet }}
+{% endfor %}
 
 #############################################################
 # DEFINE PORTS
