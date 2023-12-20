@@ -1,35 +1,57 @@
 ---
-squid_port: 3128
+### Install
 squid_user: proxy
 squid_group: proxy
-ulimit: "65536"
-squid_dns_v4_first: true
+squid_max_filedescriptors: "65535"
 
+### Configuration
+### Global
+squid_visible_hostname: "{{ inventory_hostname }}"
+squid_port: 3128 # can also be defined xx.xx.xx.xx:3128
+squid_dns_v4_first: ""
+squid_dns_nameservers: 127.0.0.1
+squid_httpd_suppress_version_string: "off"
+squid_client_persistent_connections: "on"
+squid_server_persistent_connections: "on"
+squid_positive_dns_ttl: "6 hours"
+squid_negative_ttl: "4 minutes"
+squid_maximum_object_size_in_memory: "20 MB"
+squid_connect_timeout: "7 minutes"
+squid_read_timeout: "20 minutes"
+
+### logs
 squid_core_dump_dir: "/var/spool/squid"
 squid_log_access: "/var/log/squid/access.log"
 squid_log_cache: "/var/log/squid/cache.log"
 squid_log_store: "/var/log/squid/store.log"
+#squid_log_format: '%{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %Ss/%03Hs %<st %rm %ru %un %Sh/%<A %mt %dt %{User-Agent}>h'
 
-squid_snmp_allow: true
-squid_snmp_port: 3401
+### acls
+squid_acls:
+  - {name: 'manager', type: 'proto', value: 'cache_object'}
+  - {name: 'vms', type: 'src', value: '10.64.32.0/19'}
+  - {name: 'SSL_ports', type: 'port', value: '443'}
+  - {name: 'Safe_ports', type: 'port', value: '1025-65535', comment: 'unregistered ports'}
+  - {name: 'whitelist', type: 'dst', value: '"/opt/whitelist_urls.txt"', comment: 'urls autorise'}
+  - {name: 'snmppublic', type: 'snmp_community', value: 'public'}
+  - {name: 'FTP', type: 'proto', value: 'FTP'}
+  - {name: 'CONNECT', type: 'method', value: 'CONNECT'}
 
+### access
+squid_http_access:
+  - {access: 'deny', type: 'CONNECT', scope: '!SSL_ports'}
+squid_always_direct:
+  - {access: 'allow', value: 'FTP'}
+squid_deny_info: ""
+
+### Cache
 squid_cache_allow: false
 squid_cache_dir: "/var/spool/squid"
 squid_cache_mem: '16 MB'
 squid_cache_obj_size: '15 MB'
 
-squid_acl_subnets:
-  - {name: vms, subnet: '10.64.32.0/19'}
-  - {name: home, subnet: '192.168.0.0/16'}
-
-squid_acl_ports:
-  - {type: 'SSL_ports', port: '443'}
-  - {type: 'Safe_ports', port: '80', comment: 'http'}
-  - {type: 'Safe_ports', port: '1025-65535', comment: 'unregistered ports'}
-
-squid_auth_rules:
-  - {access: 'deny', type: 'CONNECT', scope: '!SSL_ports'}
-
-squid_auth_domain: true
-squid_auth_rules_domain:
-  - {name: 'my_domain', access: 'allow', domain: 'exemple.net'}
+### Snmp
+squid_snmp: true
+squid_snmp_port: 3401
+squid_snmp_community: localhost
+squid_snmp_incoming_address: 127.0.0.1

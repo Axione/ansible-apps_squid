@@ -20,19 +20,19 @@
         state: directory
         mode: '0755'
 
-    - name: "Change ulimit to {{ ulimit }} for root"
+    - name: "Change ulimit to {{ squid_max_filedescriptors }} for root"
       community.general.pam_limits:
         domain: root
         limit_type: '-'
         limit_item: nofile
-        value: "{{ ulimit }}"
+        value: "{{ squid_max_filedescriptors }}"
 
-    - name: "Change ulimit to {{ ulimit }} for all"
+    - name: "Change ulimit to {{ squid_max_filedescriptors }} for all"
       community.general.pam_limits:
         domain: '*'
         limit_type: '-'
         limit_item: nofile
-        value: "{{ ulimit }}"
+        value: "{{ squid_max_filedescriptors }}"
 
 - name: "Configure squid.conf"
   ansible.builtin.template:

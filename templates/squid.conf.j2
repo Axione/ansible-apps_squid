@@ -1,14 +1,42 @@
 {{ ansible_managed | comment }}
 
-visible_hostname {{ inventory_hostname }}		#is used if no specific ID is set.
+visible_hostname {{ squid_visible_hostname }}
 http_port {{ squid_port }}
 coredump_dir {{ squid_core_dump_dir }}
-max_filedescriptors {{ ulimit }}
-{% if squid_dns_v4_first is defined and squid_dns_v4_first is sameas true %}
-dns_v4_first on
+max_filedescriptors {{ squid_max_filedescriptors }}
+httpd_suppress_version_string {{ squid_httpd_suppress_version_string }}
+{% if squid_dns_v4_first is defined and squid_dns_v4_first | length > 0 %}
+dns_v4_first {{ squid_dns_v4_first }}
+{% endif %}
+{% if squid_dns_nameservers is defined and squid_dns_nameservers | length > 0 %}
+dns_nameservers {{ squid_dns_nameservers }}
 {% endif %}
 
 error_directory /usr/share/squid/errors/fr-fr
+
+{% if squid_client_persistent_connections is defined and squid_client_persistent_connections | length > 0 %}
+client_persistent_connections {{ squid_client_persistent_connections }}
+{% endif %}
+{% if squid_server_persistent_connections is defined and squid_server_persistent_connections | length > 0 %}
+server_persistent_connections {{ squid_server_persistent_connections }}
+{% endif %}
+{% if squid_positive_dns_ttl is defined and squid_positive_dns_ttl | length > 0 %}
+positive_dns_ttl {{ squid_positive_dns_ttl }}
+{% endif %}
+{% if squid_negative_ttl is defined and squid_negative_ttl | length > 0 %}
+negative_ttl {{ squid_positive_dns_ttl }}
+{% endif %}
+
+{% if squid_maximum_object_size_in_memory is defined and squid_maximum_object_size_in_memory | length > 0 %}
+maximum_object_size_in_memory {{ squid_maximum_object_size_in_memory }}
+{% endif %}
+
+{% if squid_connect_timeout is defined and squid_connect_timeout | length > 0 %}
+connect_timeout {{ squid_connect_timeout }}
+{% endif %}
+{% if squid_read_timeout is defined and squid_read_timeout | length > 0 %}
+read_timeout {{ squid_read_timeout }}
+{% endif %}
 
 #############################################################
 # DEFINE LOGS
@@ -16,34 +44,30 @@ error_directory /usr/share/squid/errors/fr-fr
 access_log stdio:{{ squid_log_access }} squid
 cache_log {{ squid_log_cache }}
 cache_store_log stdio:{{ squid_log_store }}
+{% if squid_log_format is defined and squid_log_format | length > 0 %}
+logformat readable {{ squid_log_format }}
+{% endif %}
 
 #############################################################
-# DEFINE SUBNETS
+# DEFINE ACLS
 
-{% for item in squid_acl_subnets %}
-acl {{ item.name }} src {{ item.subnet }}
+{% for item in squid_acls %}
+acl {{ item.name }} {{ item.type }} {{ item.value }} #{{item.comment | default("") }}
 {% endfor %}
 
 #############################################################
-# DEFINE PORTS
+# DEFINE HTTP ACCESS RULES
 
-{% for item in squid_acl_ports %}
-acl {{ item.type | default('Safe_ports') }} port {{ item.port }} #{{item.comment | default("") }}
-{% endfor %}
-acl CONNECT method CONNECT
-
-#############################################################
-# DEFINE AUTH RULES
-
-{% for item in squid_auth_rules %}
+{% for item in squid_http_access %}
 http_access {{ item.access }} {{ item.type | default("") }} {{ item.scope }}
 {% endfor %}
 
-{% if squid_auth_domain is defined and squid_auth_domain is sameas true %}
-{% for item in squid_auth_rules_domain %}
-acl {{ item.name }} dstdomain .{{ item.domain }}
-always_direct {{ item.access }} {{ item.name }}
+{% for item in squid_always_direct %}
+always_direct {{ item.access }} {{ item.value }}
 {% endfor %}
+
+{% if squid_deny_info is defined and squid_deny_info | length > 0 %}
+deny_info {{ squid_deny_info }}
 {% endif %}
 
 {% if squid_cache_allow is defined and squid_cache_allow is sameas true %}
@@ -66,12 +90,11 @@ refresh_pattern ^gopher:	1440	0%	1440
 refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
 refresh_pattern .		0	20%	1440
 
-{% if squid_snmp_allow is defined and squid_snmp_allow is sameas true %}
+{% if squid_snmp is defined and squid_snmp is sameas true %}
 #############################################################
 # DEFINE SNMP
-acl snmpnet src 127.0.0.1
-acl snmppublic snmp_community public
 snmp_port {{ squid_snmp_port }}
-snmp_access allow snmppublic snmpnet
+snmp_access allow snmppublic {{ squid_snmp_community }}
 snmp_access deny all
+snmp_incoming_address {{ squid_snmp_incoming_address }}
 {% endif %}
