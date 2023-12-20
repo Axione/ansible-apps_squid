@@ -12,8 +12,9 @@ dns_v4_first {{ squid_dns_v4_first }}
 dns_nameservers {{ squid_dns_nameservers }}
 {% endif %}
 
-error_directory /usr/share/squid/errors/fr-fr
-
+{% if squid_error_directory is defined and squid_error_directory | length > 0 %}
+error_directory {{ squid_error_directory }}
+{% endif %}
 {% if squid_client_persistent_connections is defined and squid_client_persistent_connections | length > 0 %}
 client_persistent_connections {{ squid_client_persistent_connections }}
 {% endif %}
@@ -24,7 +25,7 @@ server_persistent_connections {{ squid_server_persistent_connections }}
 positive_dns_ttl {{ squid_positive_dns_ttl }}
 {% endif %}
 {% if squid_negative_ttl is defined and squid_negative_ttl | length > 0 %}
-negative_ttl {{ squid_positive_dns_ttl }}
+negative_ttl {{ squid_negative_ttl }}
 {% endif %}
 
 {% if squid_maximum_object_size_in_memory is defined and squid_maximum_object_size_in_memory | length > 0 %}

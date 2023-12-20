@@ -18,6 +18,7 @@ squid_negative_ttl: "4 minutes"
 squid_maximum_object_size_in_memory: "20 MB"
 squid_connect_timeout: "7 minutes"
 squid_read_timeout: "20 minutes"
+squid_error_directory: ""
 
 ### logs
 squid_core_dump_dir: "/var/spool/squid"
