@@ -11,7 +11,9 @@ dns_v4_first {{ squid_dns_v4_first }}
 {% if squid_dns_nameservers is defined and squid_dns_nameservers | length > 0 %}
 dns_nameservers {{ squid_dns_nameservers }}
 {% endif %}
-
+{% if squid_via is defined and squid_via | length > 0 %}
+via {{ squid_via }}
+{% endif %}
 {% if squid_error_directory is defined and squid_error_directory | length > 0 %}
 error_directory {{ squid_error_directory }}
 {% endif %}
@@ -27,11 +29,9 @@ positive_dns_ttl {{ squid_positive_dns_ttl }}
 {% if squid_negative_ttl is defined and squid_negative_ttl | length > 0 %}
 negative_ttl {{ squid_negative_ttl }}
 {% endif %}
-
 {% if squid_maximum_object_size_in_memory is defined and squid_maximum_object_size_in_memory | length > 0 %}
 maximum_object_size_in_memory {{ squid_maximum_object_size_in_memory }}
 {% endif %}
-
 {% if squid_connect_timeout is defined and squid_connect_timeout | length > 0 %}
 connect_timeout {{ squid_connect_timeout }}
 {% endif %}
