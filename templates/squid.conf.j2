@@ -95,7 +95,9 @@ snmp_incoming_address {{ squid_snmp_incoming_address }}
 
 access_log {{ squid_log_access }}
 cache_log {{ squid_log_cache }}
+{% if squid_log_store is defined and squid_log_store | length > 0 %}
 cache_store_log {{ squid_log_store }}
+{% endif %}
 {% if squid_log_format is defined and squid_log_format | length > 0 %}
 logformat readable {{ squid_log_format }}
 {% endif %}
