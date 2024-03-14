@@ -39,8 +39,9 @@
     src: "squid.conf.j2"
     dest: "/etc/squid/squid.conf"
     mode: '0644'
-    validate: /usr/sbin/squid -k parse %s
-  notify: Restart squid
+  notify:
+    - "Test squid configuration"
+    - "Restart squid"
 
 - name: "Start and enable squid"
   ansible.builtin.service:
