@@ -17,13 +17,6 @@ molecule_ubuntu22:
   image: lotusnoir/molecule_play
   script:
     - MOLECULE_DISTRIB=ubuntu22 molecule test
-molecule_ubuntu20:
-  stage: molecule
-  image: lotusnoir/molecule_play
-  variables:
-    MOLECULE_DOCKER_COMMAND: "--cap-add NET_ADMIN"
-  script:
-    - MOLECULE_DISTRIB=ubuntu20 molecule test
 molecule_ubuntu18:
   stage: molecule
   image: lotusnoir/molecule_play
@@ -31,6 +24,18 @@ molecule_ubuntu18:
     MOLECULE_DOCKER_COMMAND: "--cap-add NET_ADMIN"
   script:
     - MOLECULE_DISTRIB=ubuntu18 molecule test
+molecule_ubuntu20:
+  stage: molecule
+  image: lotusnoir/molecule_play
+  variables:
+    MOLECULE_DOCKER_COMMAND: "--cap-add NET_ADMIN"
+  script:
+    - MOLECULE_DISTRIB=ubuntu20 molecule test
+molecule_debian12:
+  stage: molecule
+  image: lotusnoir/molecule_play
+  script:
+    - MOLECULE_DISTRIB=debian12 molecule test
 molecule_debian10:
   stage: molecule
   image: lotusnoir/molecule_play
@@ -41,11 +46,6 @@ molecule_debian11:
   image: lotusnoir/molecule_play
   script:
     - MOLECULE_DISTRIB=debian11 molecule test
-molecule_debian12:
-  stage: molecule
-  image: lotusnoir/molecule_play
-  script:
-    - MOLECULE_DISTRIB=debian12 molecule test
 molecule_oraclelinux8:
   stage: molecule
   image: lotusnoir/molecule_play
@@ -65,11 +65,11 @@ changelog:
   image: node:19
   needs:
     - molecule_ubuntu22
-    - molecule_ubuntu20
     - molecule_ubuntu18
+    - molecule_ubuntu20
+    - molecule_debian12
     - molecule_debian10
     - molecule_debian11
-    - molecule_debian12
     - molecule_oraclelinux8
     - molecule_oraclelinux9
   artifacts:

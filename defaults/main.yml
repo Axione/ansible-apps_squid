@@ -23,9 +23,9 @@ squid_via: "on"
 
 ### logs
 squid_core_dump_dir: "/var/spool/squid"
-squid_log_access: "/var/log/squid/access.log"
+squid_log_access: "stdio:/var/log/squid/access.log squid"
 squid_log_cache: "/var/log/squid/cache.log"
-squid_log_store: "/var/log/squid/store.log"
+squid_log_store: "stdio:/var/log/squid/store.log"
 #squid_log_format: '%{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %Ss/%03Hs %<st %rm %ru %un %Sh/%<A %mt %dt %{User-Agent}>h'
 
 ### acls

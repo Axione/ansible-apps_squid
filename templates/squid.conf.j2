@@ -40,16 +40,6 @@ read_timeout {{ squid_read_timeout }}
 {% endif %}
 
 #############################################################
-# DEFINE LOGS
-
-access_log stdio:{{ squid_log_access }} squid
-cache_log {{ squid_log_cache }}
-cache_store_log stdio:{{ squid_log_store }}
-{% if squid_log_format is defined and squid_log_format | length > 0 %}
-logformat readable {{ squid_log_format }}
-{% endif %}
-
-#############################################################
 # DEFINE ACLS
 
 {% for item in squid_acls %}
@@ -98,4 +88,14 @@ snmp_port {{ squid_snmp_port }}
 snmp_access allow snmppublic {{ squid_snmp_community }}
 snmp_access deny all
 snmp_incoming_address {{ squid_snmp_incoming_address }}
+{% endif %}
+
+#############################################################
+# DEFINE LOGS
+
+access_log {{ squid_log_access }}
+cache_log {{ squid_log_cache }}
+cache_store_log {{ squid_log_store }}
+{% if squid_log_format is defined and squid_log_format | length > 0 %}
+logformat readable {{ squid_log_format }}
 {% endif %}

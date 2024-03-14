@@ -20,14 +20,14 @@
         state: directory
         mode: '0755'
 
-    - name: "Change ulimit to {{ squid_max_filedescriptors }} for root"
+    - name: "Change ulimit for root"
       community.general.pam_limits:
         domain: root
         limit_type: '-'
         limit_item: nofile
         value: "{{ squid_max_filedescriptors }}"
 
-    - name: "Change ulimit to {{ squid_max_filedescriptors }} for all"
+    - name: "Change ulimit for all"
       community.general.pam_limits:
         domain: '*'
         limit_type: '-'
@@ -39,9 +39,8 @@
     src: "squid.conf.j2"
     dest: "/etc/squid/squid.conf"
     mode: '0644'
-  notify:
-    - test squid configuration
-    - restart squid
+    validate: /usr/sbin/squid -k parse %s
+  notify: Restart squid
 
 - name: "Start and enable squid"
   ansible.builtin.service:
