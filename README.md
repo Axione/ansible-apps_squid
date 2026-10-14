@@ -38,7 +38,7 @@ See [variables](/defaults/main.yml) for more details.
           become_method: sudo
           gather_facts: true
           roles:
-            - role: ansible-apps_squid
+            - role: ansible-apps_squid or lotusnoir.base.apps_squid
 
 ## License
 

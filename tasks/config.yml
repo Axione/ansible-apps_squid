@@ -1,0 +1,167 @@
+---
+- name: "Configure LDAP secret file"
+  ansible.builtin.copy:
+    dest: "/etc/squid/ldap.secret"
+    content: "{{ squid_auth_param_secret }}"
+    owner: proxy
+    group: proxy
+    mode: '0600'
+  when:
+    - squid_auth_param_secret is defined and squid_auth_param_secret | length > 0
+  notify:
+    - "Test squid configuration"
+    - "Restart squid"
+  tags:
+    - config
+
+- name: Générer global_domains.txt
+  ansible.builtin.template:
+    src: destinations_global_domains.txt.j2
+    dest: /etc/squid/conf.d/destinations/global/global_domains.txt
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer global_ips.txt
+  ansible.builtin.template:
+    src: destinations_global_ips.txt.j2
+    dest: /etc/squid/conf.d/destinations/global/global_ips.txt
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer un fichier IP source par groupe d'inventaire
+  ansible.builtin.template:
+    src: sources_inventory_groups.txt.j2
+    dest: "/etc/squid/conf.d/sources/inventory_groups/{{ item }}.txt"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ (groups.keys()
+          | reject('in', ['all', 'ungrouped'])
+          | reject('match', '^severity_.*')
+          | reject('match', '^groups_.*')
+          | reject('match', '^vlan_.*')
+          | list | sort)
+          if (squid_generate_groups_from_inventory | default(false) | bool)
+          else [] }}"
+  when:
+    - groups[item] | length > 0
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer les fichiers IP source par groupe yaml
+  ansible.builtin.template:
+    src: sources_groups.txt.j2
+    dest: "/etc/squid/conf.d/sources/groups/{{ item.source_file }}.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('source_file', 'defined')
+                          | selectattr('sources', 'defined')
+                          | list }}"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer les fichiers IP source par host yaml
+  ansible.builtin.template:
+    src: sources_hosts.txt.j2
+    dest: "/etc/squid/conf.d/sources/hosts/{{ item.name }}.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('source_file', 'undefined')
+                          | selectattr('sources', 'undefined')
+                          | selectattr('destination_file', 'undefined')
+                          | selectattr('destinations', 'defined')
+                          | list }}"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer les fichiers IP destination par groupe yaml
+  ansible.builtin.template:
+    src: destinations_groups.txt.j2
+    dest: "/etc/squid/conf.d/destinations/groups/{{ item.destination_file }}.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('destination_file', 'defined')
+                          | selectattr('destinations', 'defined')
+                          | list }}"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer les fichiers IP destinations par host yaml
+  ansible.builtin.template:
+    src: destinations_hosts.txt.j2
+    dest: "/etc/squid/conf.d/destinations/hosts/{{ item.name }}.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('source_file', 'undefined')
+                          | selectattr('sources', 'undefined')
+                          | selectattr('destination_file', 'undefined')
+                          | selectattr('destinations', 'defined')
+                          | list }}"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer acls_sources.conf
+  ansible.builtin.template:
+    src: acls_sources.conf.j2
+    dest: /etc/squid/conf.d/acls_sources.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer acls_destinations.conf
+  ansible.builtin.template:
+    src: acls_destinations.conf.j2
+    dest: /etc/squid/conf.d/acls_destinations.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer rules.conf
+  ansible.builtin.template:
+    src: rules.conf.j2
+    dest: /etc/squid/conf.d/rules.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: Générer notes.conf
+  ansible.builtin.template:
+    src: notes.conf.j2
+    dest: /etc/squid/conf.d/notes.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload squid
+  tags:
+    - config
+
+- name: "Configure squid.conf"
+  ansible.builtin.template:
+    src: "squid.conf.j2"
+    dest: "/etc/squid/squid.conf"
+    mode: '0644'
+  notify:
+    - "Test squid configuration"
+    - "Restart squid"
+  tags:
+    - config
+
+- name: Valider la configuration Squid avant reload
+  ansible.builtin.command: squid -k parse
+  changed_when: false
+  tags:
+    - config

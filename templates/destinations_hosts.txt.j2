@@ -1,0 +1,4 @@
+{{ ansible_managed | comment }}
+{% for domain in item.destinations %}
+{{ domain }}
+{% endfor %}

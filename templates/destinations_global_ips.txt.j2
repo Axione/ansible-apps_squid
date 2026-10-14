@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+{% if squid_global_ips is defined %}
+{% for ip in squid_global_ips %}
+{{ ip }}
+{% endfor %}
+{% endif %}

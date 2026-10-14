@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+{% if squid_global_domains is defined %}
+{% for domain in squid_global_domains %}
+{{ domain }}
+{% endfor %}
+{% endif %}

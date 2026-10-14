@@ -1,0 +1,24 @@
+{{ ansible_managed | comment }}
+
+### Inventory rules
+{% for group in squid_groups %}
+{% if group.source_inventory_groups is defined %}
+{% for src in group.source_inventory_groups %}
+acl {{ group.name }} src "/etc/squid/conf.d/sources/inventory_groups/{{ src }}.txt"
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+## Groups
+{% for group in squid_groups %}
+{% if group.source_file is defined %}
+acl {{ group.name }} src "/etc/squid/conf.d/sources/groups/{{ group.source_file }}.txt"
+{% endif %}
+{% endfor %}
+
+### Single
+{% for group in squid_groups %}
+{% if group.source_file is undefined and group.sources is undefined and group.destination_file is undefined and group.destinations is defined %}
+acl {{ group.name }} src "/etc/squid/conf.d/sources/hosts/{{ group.name }}.txt"
+{% endif %}
+{% endfor %}

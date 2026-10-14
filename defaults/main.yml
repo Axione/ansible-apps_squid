@@ -2,30 +2,33 @@
 ### Configuration
 # General
 squid_visible_hostname: "{{ inventory_hostname }}"
-squid_port: 3128 # can also be defined xx.xx.xx.xx:3128
-squid_core_dump_dir: "/var/spool/squid"
-squid_via: "on"
-# Ressource Limits
-squid_max_filedescriptors: "65535"
-squid_cache_mem: "2 GB"
-squid_memory_pools: "on"
-squid_workers: 2
-squid_maximum_object_size_in_memory: "32 MB"
-squid_maximum_object_size: "512 MB"
-# HTTP and SSL settings
-squid_httpd_suppress_version_string: "on"
-squid_client_persistent_connections: "off"
-squid_server_persistent_connections: "off"
-squid_connect_timeout: "30 seconds"
-squid_request_timeout: "2 minutes"
-squid_read_timeout: "2 minutes"
-squid_client_lifetime: "10 minutes"
-# DNS
-squid_dns_nameservers: ""
-squid_dns_timeout: "5 seconds"
-squid_positive_dns_ttl: "8 hours"
-squid_negative_ttl: "4 minutes"
-squid_forwarded_for: "on"
+squid_port: 3128                        # can also be defined xx.xx.xx.xx:3128
+#squid_core_dump_dir: ""                 # "/var/spool/squid"
+#squid_via: "off"
+## Ressource Limits
+#squid_max_filedescriptors: "65535"
+#squid_cache_mem: "2 GB"
+#squid_memory_pools: "on"
+#squid_workers: "2"
+#squid_maximum_object_size_in_memory: "32 MB"
+#squid_maximum_object_size: "512 MB"
+## HTTP and SSL settings
+#squid_httpd_suppress_version_string: "on"
+#squid_client_persistent_connections: "off"
+#squid_server_persistent_connections: "off"
+#squid_connect_timeout: "15 seconds"
+#squid_request_timeout: "1 minutes"
+#squid_read_timeout: "2 minutes"
+#squid_client_lifetime: "30 minutes"
+##anti DDOS
+#squid_request_body_max_size: ""
+#squid_reply_body_max_size: ""
+## DNS
+#squid_dns_nameservers: ""
+#squid_dns_timeout: "5 seconds"
+#squid_positive_dns_ttl: "8 hours"
+#squid_negative_ttl: "4 minutes"
+#squid_forwarded_for: "delete"
 
 ### auth param
 squid_auth_param_secret: ""
@@ -52,7 +55,34 @@ squid_external_acl_type: ""
 #  -f "(&(objectClass=group)(cn=%g)(member=%u))" \
 #  ldap1.int.exemple.fr
 
+# acl group for the subnets linked to global destinations
+squid_localnet_name: "localnet"
+# Generate sources ip files from ansible groups
+squid_generate_groups_from_inventory: false
+# list of urls allowed for all squid_localnet_name
+squid_global_domains: []
+# list of ips allowed for all squid_localnet_name
+squid_global_ips: []
 squid_acls: {}
+#  - {name: 'localnet',          type: 'src', value: '10.0.0.0/8'}
+#  - {name: 'localnet',          type: 'src', value: '172.16.0.0/12'}
+#  - {name: 'localnet',          type: 'src', value: '192.168.0.0/16'}
+#  - {name: 'SSL_ports',         type: 'port', value: '443'}
+#  - {name: 'Safe_ports',        type: 'port', value: '80', comment: 'http'}
+#  - {name: 'Safe_ports',        type: 'port', value: '443', comment: 'https'}
+#  - {name: 'Safe_ports',        type: 'port', value: '21', comment: 'ftp'}
+#  - {name: 'Safe_ports',        type: 'port', value: '70', comment: 'gopher'}
+#  - {name: 'Safe_ports',        type: 'port', value: '210', comment: 'wais'}
+#  - {name: 'Safe_ports',        type: 'port', value: '280', comment: 'http-mgmt'}
+#  - {name: 'Safe_ports',        type: 'port', value: '488', comment: 'gss-http'}
+#  - {name: 'Safe_ports',        type: 'port', value: '591', comment: 'filemaker'}
+#  - {name: 'Safe_ports',        type: 'port', value: '777', comment: 'multiling http'}
+#  - {name: 'Safe_ports',        type: 'port', value: '1025-65535', comment: 'unregistered ports'}
+#  - {name: 'CONNECT',           type: 'method', value: 'CONNECT'}
+#  - {name: 'HEAD_method',       type: 'method', value: 'HEAD'}
+#  - {name: 'POST_method',       type: 'method', value: 'POST'}
+#  - {name: 'GET_method',        type: 'method', value: 'GET'}
+#
 #  - {name: 'snmppublic', type: 'snmp_community', value: 'public'}
 #  - {name: 'SSL_ports', type: 'port', value: '443'}
 #  - {name: 'FTP', type: 'proto', value: 'FTP'}
@@ -63,9 +93,45 @@ squid_acls: {}
 #  - {name: 'authenticated', type: 'proxy_auth', value: 'REQUIRED'}
 #  - {name: 'vms', type: 'src', value: '10.64.32.0/19'}
 
+### 3 kind of groups to generate automatically sources / destinations / acls rules / annotations
+#domain for single vm to destinations in case you want the short name in name
+squid_single_vm_domain: ""
+squid_groups: []
+#### From inventory groups to destination files
+#  - name: family_debian           # group name
+#    source_inventory_groups:      # ansible inventory groups (if generated from squid_generate_groups_from_inventory)
+#      - os_debian11
+#      - os_debian12
+#      - os_debian13
+#      - os_ubuntu24
+#    destination_file: repo_debian  # destination file name with content
+#    destinations:
+#      - deb.debian.org
+#      - security.debian.org
+#      - .ubuntu.com
+#      - .canonical.com
+#
+#### From groups of vms to destination file
+#  - name: my group_name
+#    source_file: my_vms
+#    sources:
+#      - 10.1.2.3
+#      - 10.4.2.0/24
+#    destination_file: access_my_vms
+#    destinations:
+#      - .google.fr
+#      - .microsoft.com
+#
+#### From single vm to destinations
+#  - name: vm-proxytestclient-staging-01
+#    destinations:
+#      - .google.com
+
 ### access
+squid_http_access_generate: false
 squid_http_access: {}
 #  - {access: 'deny', type: 'CONNECT', scope: '!SSL_ports'}
+#Create rules from squid_group info
 squid_always_direct: {}
 #  - {access: 'allow', value: 'FTP'}
 squid_deny_info: ""
@@ -75,18 +141,28 @@ squid_cache_enable: false
 squid_cache_dir: "ufs /var/spool/squid 10240 16 256"
 squid_cache_replacement_policy: ""
 
+### Refresh
+squid_refresh: ""
+
 ### Snmp
 squid_snmp_enable: false
 squid_snmp_port: 3401
 squid_snmp_community: localhost
 squid_snmp_incoming_address: 127.0.0.1
 
+### Annotations
+#Create annotations from squid_group info
+squid_enable_notes: false
+
 ### logs
 squid_error_directory: ""
 squid_log_access: "stdio:/var/log/squid/access.log squid"
 squid_log_cache: "/var/log/squid/cache.log"
 squid_log_store: "stdio:/var/log/squid/store.log"
-# squid_log_format: '%{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %Ss/%03Hs %<st %rm %ru %un %Sh/%<A %mt %dt %{User-Agent}>h'
+squid_logfile_rotate: 14
+# logs with annotations
+# squid_log_format: !unsafe 'readable_with_rule %{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %<la:%<lp %Ss/%03>Hs %<st %rm %ru %>rp %un %Sh/%<A %mt %dt rule=%{rule_matched}note %{User-Agent}>h'
+# squid_log_access: "stdio:/var/log/squid/access.log readable_with_rule"
 
 ### Various
 squid_various: ""

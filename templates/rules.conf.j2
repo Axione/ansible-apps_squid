@@ -1,0 +1,24 @@
+{{ ansible_managed | comment }}
+
+{% if squid_http_access is defined and squid_http_access | length > 0 %}
+### base config
+{% for item in squid_http_access %}
+http_access {{ item.access }} {{ item.type | default("") }} {{ item.scope }}
+{% endfor %}
+
+{% endif %}
+{% if squid_global_domains is defined and squid_global_domains | length > 0 %}
+http_access allow {{ squid_localnet_name }} global_domains
+{% endif %}
+{% if squid_global_ips is defined and squid_global_ips | length > 0 %}
+http_access allow {{ squid_localnet_name }} global_ips
+{% endif %}
+
+{% if squid_http_access_generate is defined and squid_http_access_generate is sameas true %}
+### Yaml config
+{% for group in squid_groups %}
+http_access allow {{ group.name }} dom_{{ group.name }}
+{% endfor %}
+
+{% endif %}
+http_access deny all

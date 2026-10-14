@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+{% set target = hostvars[item.name]['ansible_host'] | default(item.name ~ squid_single_vm_domain, true) if item.name in hostvars else item.name ~ squid_single_vm_domain %}
+{% if target is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+(/[0-9]+)?$') %}
+{{ target }}/32 # {{ item.name }}
+{% else %}
+{{ lookup('community.general.dig', target) }}/32 # {{ item.name }}
+{% endif %}

@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+# Domaines autorises pour {{ item.name }}
+{% for domain in item.destinations %}
+{{ domain }}
+{% endfor %}

@@ -41,6 +41,7 @@
     content: |
       squid soft nofile {{ squid_max_filedescriptors }}
       squid hard nofile {{ squid_max_filedescriptors }}
+  when: squid_max_filedescriptors is defined
 
 - name: "Set file descriptor limit for Squid"
   ansible.builtin.copy:
@@ -51,31 +52,32 @@
     content: |
       [Service]
       LimitNOFILE={{ squid_max_filedescriptors }}
+  when: squid_max_filedescriptors is defined
   notify:
     - "Reload daemon"
     - "Restart squid"
 
-- name: "Configure LDAP secret file"
-  ansible.builtin.copy:
-    dest: "/etc/squid/ldap.secret"
-    content: "{{ squid_auth_param_secret }}"
-    owner: proxy
-    group: proxy
-    mode: '0600'
-  when:
-    - squid_auth_param_secret is defined and squid_auth_param_secret | length > 0
-  notify:
-    - "Test squid configuration"
-    - "Restart squid"
+- name: Créer l'arborescence conf.d
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /etc/squid/conf.d
+    - /etc/squid/conf.d/sources/inventory_groups
+    - /etc/squid/conf.d/sources/groups
+    - /etc/squid/conf.d/sources/hosts
+    - /etc/squid/conf.d/destinations/global
+    - /etc/squid/conf.d/destinations/groups
+    - /etc/squid/conf.d/destinations/hosts
+    - /etc/squid/errors
 
-- name: "Configure squid.conf"
-  ansible.builtin.template:
-    src: "squid.conf.j2"
-    dest: "/etc/squid/squid.conf"
-    mode: '0644'
-  notify:
-    - "Test squid configuration"
-    - "Restart squid"
+- name: Include config
+  ansible.builtin.include_tasks: config.yml
+  tags:
+    - config
 
 - name: "Start and enable squid"
   ansible.builtin.service:

@@ -1,0 +1,23 @@
+{{ ansible_managed | comment }}
+
+### Global
+{% if squid_global_domains is defined and squid_global_domains | length > 0 %}
+acl global_domains dstdomain "/etc/squid/conf.d/destinations/global/global_domains.txt"
+{% endif %}
+{% if squid_global_ips is defined and squid_global_ips | length > 0 %}
+acl global)ips  dst       "/etc/squid/conf.d/destinations/global/global_ips.txt"
+{% endif %}
+
+### Groups
+{% for group in squid_groups %}
+{% if group.destination_file is defined and group.destinations is defined %}
+acl dom_{{ group.name }} dstdomain "/etc/squid/conf.d/destinations/groups/{{ group.destination_file }}.txt"
+{% endif %}
+{% endfor %}
+
+### Single
+{% for group in squid_groups %}
+{% if group.source_file is undefined and group.sources is undefined and group.destination_file is undefined and group.destinations is defined %}
+acl dom_{{ group.name }} dstdomain "/etc/squid/conf.d/destinations/hosts/{{ group.name }}.txt"
+{% endif %}
+{% endfor %}

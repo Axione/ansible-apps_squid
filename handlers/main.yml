@@ -12,3 +12,7 @@
   ansible.builtin.service:
     name: squid
     state: restarted
+
+- name: Reload squid
+  ansible.builtin.command: squid -k reconfigure
+  changed_when: false

@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+# Liste des IP du groupe {{ item }}
+{% for vm_name in groups[item] %}
+{% if 'guest.ipAddress' in hostvars[vm_name] %}
+{{ hostvars[vm_name]['guest.ipAddress'] }}/32       # {{ vm_name }}
+{% endif %}
+{% endfor %}

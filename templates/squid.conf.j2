@@ -1,23 +1,28 @@
 {{ ansible_managed | comment }}
 
-#############################################################
+# ---------------------------------------------------------------------
 # GENERAL SETTINGS
+# ---------------------------------------------------------------------
 visible_hostname {{ squid_visible_hostname }}
 http_port {{ squid_port }}
+{% if squid_core_dump_dir is defined and squid_core_dump_dir | length > 0 %}
 coredump_dir {{ squid_core_dump_dir }}
+{% endif %}
 {% if squid_via is defined and squid_via | length > 0 %}
 via {{ squid_via }}
 {% endif %}
 
 # Resource limits
+{% if squid_max_filedescriptors is defined and squid_max_filedescriptors | string | length > 0 %}
 max_filedescriptors {{ squid_max_filedescriptors }}
+{% endif %}
 {% if squid_cache_mem is defined and squid_cache_mem | length > 0 %}
 cache_mem {{ squid_cache_mem }}
 {% endif %}
 {% if squid_memory_pools is defined and squid_memory_pools | length > 0 %}
 memory_pools {{ squid_memory_pools }}
 {% endif %}
-{% if squid_workers is defined %}
+{% if squid_workers is defined and squid_workers | string | length > 0 %}
 workers {{ squid_workers }}
 {% endif %}
 {% if squid_maximum_object_size_in_memory is defined and squid_maximum_object_size_in_memory | length > 0 %}
@@ -28,7 +33,9 @@ maximum_object_size {{ squid_maximum_object_size }}
 {% endif %}
 
 # HTTP and SSL settings
+{% if squid_httpd_suppress_version_string is defined and squid_httpd_suppress_version_string | length > 0 %}
 httpd_suppress_version_string {{ squid_httpd_suppress_version_string }}
+{% endif %}
 {% if squid_client_persistent_connections is defined and squid_client_persistent_connections | length > 0 %}
 client_persistent_connections {{ squid_client_persistent_connections }}
 {% endif %}
@@ -46,6 +53,14 @@ read_timeout {{ squid_read_timeout }}
 {% endif %}
 {% if squid_client_lifetime is defined and squid_client_lifetime | length > 0 %}
 client_lifetime {{ squid_client_lifetime }}
+{% endif %}
+
+# Durcissement anti-DoS applicatif
+{% if squid_request_body_max_size is defined and squid_request_body_max_size | length > 0 %}
+request_body_max_size {{ squid_request_body_max_size }}
+{% endif %}
+{% if squid_reply_body_max_size is defined and squid_reply_body_max_size | length > 0 %}
+reply_body_max_size {{ squid_reply_body_max_size }} all
 {% endif %}
 
 # DNS
@@ -66,18 +81,17 @@ forwarded_for {{ squid_forwarded_for }}
 {% endif %}
 
 {% if squid_auth_param is defined and squid_auth_param | length > 0 %}
-#############################################################
+# ---------------------------------------------------------------------
 # DEFINE AUTHENTICATION (USERS)
-#
+# ---------------------------------------------------------------------
 {% for item in squid_auth_param %}
 auth_param {{ item.name }} {{ item.type }} {{ item.value }} # {{ item.comment | default("") }}
 {% endfor %}
 
 {% endif %}
-{% if squid_acls is defined and squid_acls | length > 0 %}
-#############################################################
-# DEFINE GROUP ACLS
-#
+# ---------------------------------------------------------------------
+# ACL DE BASE (ports, méthodes, protocoles)
+# ---------------------------------------------------------------------
 {% if squid_external_acl_type is defined and squid_external_acl_type | length > 0 %}
 {{ squid_external_acl_type }}
 {% endif %}
@@ -85,13 +99,16 @@ auth_param {{ item.name }} {{ item.type }} {{ item.value }} # {{ item.comment | 
 acl {{ item.name }} {{ item.type }} {{ item.value }} # {{ item.comment | default("") }}
 {% endfor %}
 
-{% endif %}
-#############################################################
-# DEFINE HTTP ACCESS RULES (ORDER IS CRITICAL)
-#
-{% for item in squid_http_access %}
-http_access {{ item.access }} {{ item.type | default("") }} {{ item.scope }}
-{% endfor %}
+# ---------------------------------------------------------------------
+# ACLs sources et destinations ---
+# ---------------------------------------------------------------------
+include /etc/squid/conf.d/acls_sources.conf
+include /etc/squid/conf.d/acls_destinations.conf
+
+# ---------------------------------------------------------------------
+# REGLES DE SECURITE DE BASE (toujours en premier)
+# ---------------------------------------------------------------------
+include /etc/squid/conf.d/rules.conf
 
 {% for item in squid_always_direct %}
 always_direct {{ item.access }} {{ item.value }}
@@ -104,7 +121,7 @@ always_direct {{ item.access }} {{ item.value }}
 deny_info {{ squid_deny_info }}
 {% endif %}
 
-{% if squid_cache_enable is defined and squid_cache_enable is sameas true %}
+{% if squid_cache_enable | default(false) %}
 #############################################################
 # DEFINE CACHE
 #
@@ -112,8 +129,14 @@ cache_dir {{ squid_cache_dir }}
 {% if squid_cache_replacement_policy is defined and squid_cache_replacement_policy | length > 0 %}
 cache_replacement_policy {{ squid_cache_replacement_policy }}
 {% endif %}
-{% endif %}
+{% else %}
+#############################################################
+# CACHE DISABLED (durcissement : pas de stockage sur disque)
+#
+cache deny all
 
+{% endif %}
+{% if squid_refresh is defined and squid_refresh | length > 0 %}
 #############################################################
 # DEFINE REFRESH
 #
@@ -122,33 +145,46 @@ refresh_pattern ^gopher:	1440	0%	1440
 refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
 refresh_pattern .		0	20%	1440
 
-{% if squid_snmp_enable is defined and squid_snmp_enable is sameas true %}
+{% endif %}
+{% if squid_snmp_enable | default(false) %}
 #############################################################
 # DEFINE SNMP
 #
 snmp_port {{ squid_snmp_port }}
-snmp_access allow snmppublic {{ squid_snmp_community }}
+acl snmppublic snmp_community {{ squid_snmp_community }}
+snmp_access allow snmppublic localhost
 snmp_access deny all
 snmp_incoming_address {{ squid_snmp_incoming_address }}
+
 {% endif %}
+{% if squid_enable_notes | default(false) %}
+# ---------------------------------------------------------------------
+# ANNOTATIONS - QUELLE REGLE A AUTORISE LA REQUETE
+# ---------------------------------------------------------------------
+include /etc/squid/conf.d/notes.conf
 
-#############################################################
-# DEFINE LOGS
-
+{% endif %}
+# ---------------------------------------------------------------------
+# LOGS / TRAÇABILITÉ
+# ---------------------------------------------------------------------
 {% if squid_error_directory is defined and squid_error_directory | length > 0 %}
 error_directory {{ squid_error_directory }}
+{% endif %}
+{% if squid_log_format is defined and squid_log_format | length > 0 %}
+logformat {{ squid_log_format }}
 {% endif %}
 access_log {{ squid_log_access }}
 cache_log {{ squid_log_cache }}
 {% if squid_log_store is defined and squid_log_store | length > 0 %}
 cache_store_log {{ squid_log_store }}
 {% endif %}
-{% if squid_log_format is defined and squid_log_format | length > 0 %}
-logformat readable {{ squid_log_format }}
+{% if squid_logfile_rotate is defined and squid_logfile_rotate | string | length > 0 %}
+logfile_rotate {{ squid_logfile_rotate | default(14) }}
 {% endif %}
 
 {% if squid_various is defined and squid_various | length > 0 %}
-#############################################################
+# ---------------------------------------------------------------------
 # DEFINE VARIOUS
+# ---------------------------------------------------------------------
 {{ squid_various }}
 {% endif %}

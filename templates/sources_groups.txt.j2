@@ -1,0 +1,19 @@
+{{ ansible_managed | comment }}
+# Liste des IP du groupe {{ item.name }}
+{% for vm in item.sources %}
+{% if vm is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+(/[0-9]+)?$') %}
+{% if '/' in vm %}
+{{ vm }}
+{% else %}
+{{ vm }}/32
+{% endif %}
+{% else %}
+{% set target = hostvars[vm]['ansible_host'] | default(vm, true) if vm in hostvars else vm %}
+{% if target is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+(/[0-9]+)?$') %}
+{% set resolved_ip = target %}
+{% else %}
+{% set resolved_ip = lookup('community.general.dig', target) %}
+{% endif %}
+{{ resolved_ip }}/32
+{% endif %}
+{% endfor %}

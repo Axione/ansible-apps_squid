@@ -4,6 +4,22 @@
   become: true
   any_errors_fatal: true
 
+  vars:
+    squid_groups:
+      - name: my_group_name
+        source_file: my_vms
+        sources:
+          - 10.1.2.3
+        destination_file: access_my_vms
+        destinations:
+          - .google.fr
+      - name: 10.2.5.6
+        destinations:
+          - .google.com
+          - .microsoft.com
+    squid_http_access_generate: true
+    squid_enable_notes: true
+
   tasks:
     - name: Include role
       ansible.builtin.include_role:
