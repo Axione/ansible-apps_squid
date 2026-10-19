@@ -1,7 +1,23 @@
 {{ ansible_managed | comment }}
-{% set target = hostvars[item.name]['ansible_host'] | default(item.name ~ squid_single_vm_domain, true) if item.name in hostvars else item.name ~ squid_single_vm_domain %}
-{% if target is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+(/[0-9]+)?$') %}
-{{ target }}/32 # {{ item.name }}
+{% set ip_regex = '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+(/[0-9]+)?$' %}
+{% set ns = namespace(resolved=None) %}
+
+{% if item.name is match(ip_regex) %}
+{% set ns.resolved = item.name %}
+{% elif item.name in hostvars and hostvars[item.name]['ansible_host'] is defined and hostvars[item.name]['ansible_host'] is match(ip_regex) %}
+{% set ns.resolved = hostvars[item.name]['ansible_host'] %}
 {% else %}
-{{ lookup('community.general.dig', target) }}/32 # {{ item.name }}
+{% for domain in squid_single_vm_domains %}
+{% if not ns.resolved %}
+{% set fqdn = item.name ~ domain %}
+{% set dig_result = lookup('ansible.builtin.pipe', "getent hosts " ~ fqdn ~ " 2>/dev/null | awk '{print $1}' || true") %}
+{% if dig_result is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$') %}
+{% set ns.resolved = dig_result %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if ns.resolved %}
+{{ ns.resolved }}/32 # {{ item.name }}
 {% endif %}

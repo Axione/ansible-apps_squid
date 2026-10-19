@@ -39,15 +39,14 @@
     owner: root
     group: root
     mode: "0644"
-  loop: "{{ (groups.keys()
-          | reject('in', ['all', 'ungrouped'])
-          | reject('match', '^severity_.*')
-          | reject('match', '^groups_.*')
-          | reject('match', '^vlan_.*')
-          | list | sort)
+  loop: "{{ (squid_groups
+          | map(attribute='source_inventory_groups', default=[])
+          | sum(start=[])
+          | unique | sort)
           if (squid_generate_groups_from_inventory | default(false) | bool)
           else [] }}"
   when:
+    - item in groups
     - groups[item] | length > 0
   notify: Reload squid
   tags:

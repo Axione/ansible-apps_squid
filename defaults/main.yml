@@ -95,7 +95,7 @@ squid_acls: {}
 
 ### 3 kind of groups to generate automatically sources / destinations / acls rules / annotations
 #domain for single vm to destinations in case you want the short name in name
-squid_single_vm_domain: ""
+squid_single_vm_domains: []
 squid_groups: []
 #### From inventory groups to destination files
 #  - name: family_debian           # group name
