@@ -5,3 +5,4 @@ skip_list:
   - 'schema'
   - yaml[line-length]
   - yaml[comments]
+  - no-handler

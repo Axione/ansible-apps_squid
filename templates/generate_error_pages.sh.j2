@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+SRC_DIR="/usr/share/squid-langpack/{{ squid_error_lang }}"
+ERR_DIR="{{ squid_error_directory }}"
+
+mkdir -p "$ERR_DIR"
+
+for f in "$SRC_DIR"/ERR_*; do
+    name="$(basename "$f")"
+
+    if [ "$name" == "error-details.txt" ]; then
+        continue
+    fi
+
+    cat > "${ERR_DIR}/${name}" <<EOF
+{{ squid_error_message }}
+EOF
+
+    echo "Généré : $name"
+done
+
+chmod -R 644 "$ERR_DIR"/*
+
+echo "Terminé."

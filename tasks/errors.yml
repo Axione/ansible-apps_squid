@@ -1,0 +1,17 @@
+---
+- name: Deploy generate_error_pages.sh script
+  ansible.builtin.template:
+    src: "templates/generate_error_pages.sh.j2"
+    dest: "/etc/squid/generate_error_pages.sh"
+    owner: root
+    group: root
+    mode: "0755"
+  register: error_pages_script
+
+- name: Run generate_error_pages.sh
+  ansible.builtin.command: /etc/squid/generate_error_pages.sh
+  args:
+    chdir: /etc/squid
+  register: generate_output
+  when: error_pages_script.changed
+  changed_when: true

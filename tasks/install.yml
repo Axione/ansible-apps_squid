@@ -72,7 +72,13 @@
     - /etc/squid/conf.d/destinations/global
     - /etc/squid/conf.d/destinations/groups
     - /etc/squid/conf.d/destinations/hosts
-    - /etc/squid/errors
+    - "{{ squid_error_directory | default('/etc/squid/errors', true) }}"
+
+- name: Include errors
+  ansible.builtin.include_tasks: errors.yml
+  when: squid_error_directory | length > 0
+  tags:
+    - errors
 
 - name: Include config
   ansible.builtin.include_tasks: config.yml
