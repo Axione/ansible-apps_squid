@@ -2,16 +2,16 @@
 
 note rule_matched manager                 manager localhost
 
+{% for group in squid_groups %}
+note rule_matched {{ group.name }}        {{ group.name }} dom_{{ group.name }}
+{% endfor %}
+
 {% if squid_global_domains is defined and squid_global_domains | length > 0 %}
 note rule_matched global_domain {{ squid_localnet_name }} global_domains
 {% endif %}
 {% if squid_global_ips is defined and squid_global_ips | length > 0 %}
 note rule_matched global_ip     {{ squid_localnet_name }} global_ips
 {% endif %}
-
-{% for group in squid_groups %}
-note rule_matched {{ group.name }}        {{ group.name }} dom_{{ group.name }}
-{% endfor %}
 
 #catch all
 note rule_matched no_rule_set
