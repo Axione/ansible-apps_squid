@@ -5,7 +5,7 @@
 acl global_domains dstdomain "/etc/squid/conf.d/destinations/global/global_domains.txt"
 {% endif %}
 {% if squid_global_ips is defined and squid_global_ips | length > 0 %}
-acl global)ips  dst       "/etc/squid/conf.d/destinations/global/global_ips.txt"
+acl global_ips  dst       "/etc/squid/conf.d/destinations/global/global_ips.txt"
 {% endif %}
 
 ### Groups
