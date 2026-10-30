@@ -21,7 +21,8 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
+    - global
 
 - name: Générer global_ips.txt
   ansible.builtin.template:
@@ -30,7 +31,8 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
+    - global
 
 - name: Générer un fichier IP source par groupe d'inventaire
   ansible.builtin.template:
@@ -50,7 +52,8 @@
     - groups[item] | length > 0
   notify: Reload squid
   tags:
-    - config
+    - rules
+    - inventory
 
 - name: Générer les fichiers IP source par groupe yaml
   ansible.builtin.template:
@@ -62,7 +65,7 @@
                           | list }}"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer les fichiers IP source par host yaml
   ansible.builtin.template:
@@ -76,7 +79,7 @@
                           | list }}"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer les fichiers IP destination par groupe yaml
   ansible.builtin.template:
@@ -88,7 +91,7 @@
                           | list }}"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer les fichiers IP destinations par host yaml
   ansible.builtin.template:
@@ -102,7 +105,7 @@
                           | list }}"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer acls_sources.conf
   ansible.builtin.template:
@@ -113,7 +116,7 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer acls_destinations.conf
   ansible.builtin.template:
@@ -124,7 +127,7 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer rules.conf
   ansible.builtin.template:
@@ -135,7 +138,7 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: Générer notes.conf
   ansible.builtin.template:
@@ -146,7 +149,7 @@
     mode: "0644"
   notify: Reload squid
   tags:
-    - config
+    - rules
 
 - name: "Configure squid.conf"
   ansible.builtin.template:
@@ -164,3 +167,6 @@
   changed_when: false
   tags:
     - config
+    - rules
+    - inventory
+    - global

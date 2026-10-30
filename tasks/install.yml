@@ -84,6 +84,9 @@
   ansible.builtin.include_tasks: config.yml
   tags:
     - config
+    - rules
+    - inventory
+    - global
 
 - name: "Start and enable squid"
   ansible.builtin.service:
