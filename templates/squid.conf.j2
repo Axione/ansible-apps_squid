@@ -173,7 +173,9 @@ error_directory {{ squid_error_directory }}
 {% if squid_log_format is defined and squid_log_format | length > 0 %}
 logformat {{ squid_log_format }}
 {% endif %}
-access_log {{ squid_log_access }}
+{% for log_line in squid_log_access %}
+access_log {{ log_line }}
+{% endfor %}
 cache_log {{ squid_log_cache }}
 {% if squid_log_store is defined and squid_log_store | length > 0 %}
 cache_store_log {{ squid_log_store }}

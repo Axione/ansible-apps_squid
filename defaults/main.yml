@@ -63,25 +63,19 @@ squid_generate_groups_from_inventory: false
 squid_global_domains: []
 # list of ips allowed for all squid_localnet_name
 squid_global_ips: []
-squid_acls: {}
-#  - {name: 'localnet',          type: 'src', value: '10.0.0.0/8'}
-#  - {name: 'localnet',          type: 'src', value: '172.16.0.0/12'}
-#  - {name: 'localnet',          type: 'src', value: '192.168.0.0/16'}
-#  - {name: 'SSL_ports',         type: 'port', value: '443'}
-#  - {name: 'Safe_ports',        type: 'port', value: '80', comment: 'http'}
-#  - {name: 'Safe_ports',        type: 'port', value: '443', comment: 'https'}
-#  - {name: 'Safe_ports',        type: 'port', value: '21', comment: 'ftp'}
-#  - {name: 'Safe_ports',        type: 'port', value: '70', comment: 'gopher'}
-#  - {name: 'Safe_ports',        type: 'port', value: '210', comment: 'wais'}
-#  - {name: 'Safe_ports',        type: 'port', value: '280', comment: 'http-mgmt'}
-#  - {name: 'Safe_ports',        type: 'port', value: '488', comment: 'gss-http'}
-#  - {name: 'Safe_ports',        type: 'port', value: '591', comment: 'filemaker'}
-#  - {name: 'Safe_ports',        type: 'port', value: '777', comment: 'multiling http'}
-#  - {name: 'Safe_ports',        type: 'port', value: '1025-65535', comment: 'unregistered ports'}
-#  - {name: 'CONNECT',           type: 'method', value: 'CONNECT'}
-#  - {name: 'HEAD_method',       type: 'method', value: 'HEAD'}
-#  - {name: 'POST_method',       type: 'method', value: 'POST'}
-#  - {name: 'GET_method',        type: 'method', value: 'GET'}
+squid_acls:
+  - {name: 'localnet',          type: 'src', value: '10.0.0.0/8'}
+  - {name: 'localnet',          type: 'src', value: '172.16.0.0/12'}
+  - {name: 'localnet',          type: 'src', value: '192.168.0.0/16'}
+  - {name: 'SSL_ports',         type: 'port', value: '443'}
+  - {name: 'Safe_ports',        type: 'port', value: '80', comment: 'http'}
+  - {name: 'Safe_ports',        type: 'port', value: '443', comment: 'https'}
+  - {name: 'Safe_ports',        type: 'port', value: '21', comment: 'ftp'}
+  - {name: 'Safe_ports',        type: 'port', value: '70', comment: 'gopher'}
+  - {name: 'Safe_ports',        type: 'port', value: '210', comment: 'wais'}
+  - {name: 'Safe_ports',        type: 'port', value: '1025-65535', comment: 'unregistered ports'}
+  - {name: 'CONNECT',           type: 'method', value: 'CONNECT'}
+  - {name: 'manager_requests',    type: 'urlpath_regex', value: '^/squid-internal-mgr/'}
 #
 #  - {name: 'snmppublic', type: 'snmp_community', value: 'public'}
 #  - {name: 'SSL_ports', type: 'port', value: '443'}
@@ -129,8 +123,14 @@ squid_groups: []
 
 ### access
 squid_http_access_generate: false
-squid_http_access: {}
+squid_http_access:
+  - {access: 'deny', scope: '!Safe_ports'}
+  - {access: 'deny', type: 'CONNECT', scope: '!SSL_ports'}
+  - {access: 'allow', type: 'manager', scope: 'localhost'}
+  - {access: 'deny',  scope: 'manager'}
+  - {access: 'deny',  scope: '!localnet'}
 #  - {access: 'deny', type: 'CONNECT', scope: '!SSL_ports'}
+
 #Create rules from squid_group info
 squid_always_direct: {}
 #  - {access: 'allow', value: 'FTP'}
@@ -160,7 +160,9 @@ squid_error_directory: ""
 squid_error_lang: "fr"
 #squid_error_message: !unsafe 'PROXY_SQUID_ERROR type=${f} url=%U client=%i time=%t'
 
-squid_log_access: "stdio:/var/log/squid/access.log squid"
+squid_log_access:
+  - "none manager_requests"
+  - "stdio:/var/log/squid/access.log squid"
 squid_log_cache: "/var/log/squid/cache.log"
 squid_log_store: "stdio:/var/log/squid/store.log"
 squid_logfile_rotate: 0

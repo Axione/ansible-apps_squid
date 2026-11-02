@@ -16,6 +16,7 @@ scenario:
     - converge
     - idempotence
     - side_effect
+    - verify
     - cleanup
     - destroy
 

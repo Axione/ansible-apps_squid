@@ -15,9 +15,9 @@ galaxy_info:
         - "resolute"
     - name: "Debian"
       versions:
-        - "buster"
-        - "bullseye"
         - "bookworm"
+        - "bullseye"
+        - "buster"
         - "trixie"
     - name: "Rocky"
       versions:
@@ -25,9 +25,9 @@ galaxy_info:
         - "9"
     - name: "OracleLinux"
       versions:
+        - "10"
         - "8"
         - "9"
-        - "10"
     - name: "RedHat"
       versions:
         - "10"
