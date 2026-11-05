@@ -160,15 +160,15 @@ squid_error_directory: ""
 squid_error_lang: "fr"
 #squid_error_message: !unsafe 'PROXY_SQUID_ERROR type=${f} url=%U client=%i time=%t'
 
+#squid_log_format: !unsafe
+#  - readable_with_rule %{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %<la:%<lp %Ss/%03>Hs %<st %rm %ru %>rp %[un %Sh/%<a %mt %dt rule=%{rule_matched}note %{User-Agent}>h
+#  - readable_with_rule_json {"time":"%{%d/%b/%Y:%H:%M:%S %z}tl","response_time_ms":%6tr,"client_ip":"%>a","client_port":"%>rp","status":"%Ss/%03>Hs","bytes":%<st,"method":"%rm","url":"%ru","user":"%[un","hierarchy":"%Sh/%<a","mime_type":"%mt","duration_total_ms":%dt,"rule_matched":"%{rule_matched}note","user_agent":"%{User-Agent}>h"}
 squid_log_access:
   - "none manager_requests"
   - "stdio:/var/log/squid/access.log squid"
 squid_log_cache: "/var/log/squid/cache.log"
 squid_log_store: "stdio:/var/log/squid/store.log"
 squid_logfile_rotate: 0
-# logs with annotations
-# squid_log_format: !unsafe 'readable_with_rule %{%d/%b/%Y:%H:%M:%S %z}tl %6tr %>a %<la:%<lp %Ss/%03>Hs %<st %rm %ru %>rp %un %Sh/%<A %mt %dt rule=%{rule_matched}note %{User-Agent}>h'
-# squid_log_access: "stdio:/var/log/squid/access.log readable_with_rule"
 
 ### Various
 squid_various: ""
