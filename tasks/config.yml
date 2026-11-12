@@ -66,6 +66,7 @@
   notify: Reload squid
   tags:
     - rules
+    - sources
 
 - name: Générer les fichiers IP source par host yaml
   ansible.builtin.template:
@@ -80,8 +81,9 @@
   notify: Reload squid
   tags:
     - rules
+    - sources
 
-- name: Générer les fichiers IP destination par groupe yaml
+- name: Générer les fichiers destinations Domain par groupe
   ansible.builtin.template:
     src: destinations_groups.txt.j2
     dest: "/etc/squid/conf.d/destinations/groups/{{ item.destination_file }}.txt"
@@ -89,11 +91,27 @@
   loop: "{{ squid_groups | selectattr('destination_file', 'defined')
                           | selectattr('destinations', 'defined')
                           | list }}"
+  when: item.destinations | reject('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0
   notify: Reload squid
   tags:
     - rules
+    - destinations
 
-- name: Générer les fichiers IP destinations par host yaml
+- name: Générer les fichiers destinations IP par groupe
+  ansible.builtin.template:
+    src: destinations_groups_ips.txt.j2
+    dest: "/etc/squid/conf.d/destinations/groups/{{ item.destination_file }}_ips.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('destination_file', 'defined')
+                          | selectattr('destinations', 'defined')
+                          | list }}"
+  when: item.destinations | select('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0
+  notify: Reload squid
+  tags:
+    - rules
+    - destinations
+
+- name: Générer les fichiers destinations Domain par host
   ansible.builtin.template:
     src: destinations_hosts.txt.j2
     dest: "/etc/squid/conf.d/destinations/hosts/{{ item.name }}.txt"
@@ -103,9 +121,27 @@
                           | selectattr('destination_file', 'undefined')
                           | selectattr('destinations', 'defined')
                           | list }}"
+  when: item.destinations | reject('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0
   notify: Reload squid
   tags:
     - rules
+    - destinations
+
+- name: Générer les fichiers destinations IP par host
+  ansible.builtin.template:
+    src: destinations_hosts_ips.txt.j2
+    dest: "/etc/squid/conf.d/destinations/hosts/{{ item.name }}_ips.txt"
+    mode: "0644"
+  loop: "{{ squid_groups | selectattr('source_file', 'undefined')
+                          | selectattr('sources', 'undefined')
+                          | selectattr('destination_file', 'undefined')
+                          | selectattr('destinations', 'defined')
+                          | list }}"
+  when: item.destinations | select('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0
+  notify: Reload squid
+  tags:
+    - rules
+    - destinations
 
 - name: Générer acls_sources.conf
   ansible.builtin.template:
@@ -117,6 +153,7 @@
   notify: Reload squid
   tags:
     - rules
+    - acls
 
 - name: Générer acls_destinations.conf
   ansible.builtin.template:
@@ -128,6 +165,7 @@
   notify: Reload squid
   tags:
     - rules
+    - acls
 
 - name: Générer rules.conf
   ansible.builtin.template:
@@ -139,6 +177,7 @@
   notify: Reload squid
   tags:
     - rules
+    - acls
 
 - name: Générer notes.conf
   ansible.builtin.template:
@@ -150,6 +189,7 @@
   notify: Reload squid
   tags:
     - rules
+    - acls
 
 - name: "Configure squid.conf"
   ansible.builtin.template:

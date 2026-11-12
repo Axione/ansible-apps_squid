@@ -10,7 +10,14 @@ http_access {{ item.access }} {{ item.type | default("") }} {{ item.scope }}
 {% if squid_http_access_generate is defined and squid_http_access_generate is sameas true %}
 ### Yaml config
 {% for group in squid_groups %}
+{% if group.destinations is defined %}
+{% if group.destinations | reject('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0 %}
 http_access allow {{ group.name }} dom_{{ group.name }}
+{% endif %}
+{% if group.destinations | select('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0 %}
+http_access allow {{ group.name }} ips_{{ group.name }}
+{% endif %}
+{% endif %}
 {% endfor %}
 
 {% endif %}

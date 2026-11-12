@@ -1,0 +1,4 @@
+{{ ansible_managed | comment }}
+{% for entry in item.destinations if entry is match('^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') %}
+{{ entry }}
+{% endfor %}

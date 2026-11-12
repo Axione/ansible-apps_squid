@@ -1,4 +1,4 @@
 {{ ansible_managed | comment }}
-{% for domain in item.destinations %}
-{{ domain }}
+{% for entry in item.destinations if not (entry is match('^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$')) %}
+{{ entry }}
 {% endfor %}

@@ -170,10 +170,8 @@ include /etc/squid/conf.d/notes.conf
 {% if squid_error_directory is defined and squid_error_directory | length > 0 %}
 error_directory {{ squid_error_directory }}
 {% endif %}
-{% if squid_log_format is defined %}
-{% for format in squid_log_format %}
-logformat {{ format }}
-{% endfor %}
+{% if squid_log_format is defined and squid_log_format | length > 0 %}
+logformat {{ squid_log_format }}
 {% endif %}
 {% for log_line in squid_log_access %}
 access_log {{ log_line }}

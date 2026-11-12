@@ -87,6 +87,9 @@
     - rules
     - inventory
     - global
+    - sources
+    - destinations
+    - acls
 
 - name: "Start and enable squid"
   ansible.builtin.service:

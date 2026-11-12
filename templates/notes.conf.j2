@@ -3,7 +3,14 @@
 note rule_matched manager                 manager localhost
 
 {% for group in squid_groups %}
-note rule_matched {{ group.name }}        {{ group.name }} dom_{{ group.name }}
+{% if group.destinations is defined %}
+{% if group.destinations | reject('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0 %}
+note rule_matched {{ group.name }}         {{ group.name }} dom_{{ group.name }}
+{% endif %}
+{% if group.destinations | select('match', '^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$') | list | length > 0 %}
+note rule_matched {{ group.name }}_ips     {{ group.name }} ips_{{ group.name }}
+{% endif %}
+{% endif %}
 {% endfor %}
 
 {% if squid_global_domains is defined and squid_global_domains | length > 0 %}
