@@ -7,6 +7,8 @@
     group: root
     mode: "0755"
   register: error_pages_script
+  tags:
+    - errors
 
 - name: Run generate_error_pages.sh
   ansible.builtin.command: /etc/squid/generate_error_pages.sh
@@ -15,3 +17,5 @@
   register: generate_output
   when: error_pages_script.changed
   changed_when: true
+  tags:
+    - errors
