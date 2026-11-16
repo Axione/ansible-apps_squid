@@ -153,6 +153,8 @@ squid_snmp_incoming_address: 127.0.0.1
 ### Annotations
 #Create annotations from squid_group info
 squid_enable_notes: false
+squid_notes:
+  - {type: "rule_matched", name: "manager", acl_src: "manager", acl_dst: "localhost"}
 
 ### logs
 #### Create custom error logs
